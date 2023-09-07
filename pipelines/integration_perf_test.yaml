@@ -24,5 +24,6 @@ spec:
         steps:
         - image: quay.io/yogananth_subramanian/horreum:latest  
           args:
+          - run
           - test
           - list
