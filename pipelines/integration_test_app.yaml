@@ -41,7 +41,7 @@ spec:
         - name: NAMESPACE
           value: $(params.NAMESPACE)
         - name: EXPECTED_OUTPUT
-          value: $(params.EXPECTED_OUTPUT)
+          value: $(params.SNAPSHOT)
         - name: PORT
           value: $(params.PORT)
       workspaces:
