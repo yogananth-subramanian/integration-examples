@@ -41,7 +41,7 @@ spec:
         - name: NAMESPACE
           value: $(params.NAMESPACE)
         - name: EXPECTED_OUTPUT
-          value: $(params.SNAPSHOT.components[].containerImage)
+          value: $(params.SNAPSHOT.application)
         - name: PORT
           value: $(params.PORT)
       workspaces:
