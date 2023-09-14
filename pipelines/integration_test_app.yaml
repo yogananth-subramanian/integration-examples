@@ -23,7 +23,9 @@ spec:
     - description: 'Application endpoint port'
       name: PORT
       default: ""
-      type: string     
+      type: string
+  results:
+    - name: IMAGE_URL      
   tasks:
     - name: example-push-task
       taskSpec:
