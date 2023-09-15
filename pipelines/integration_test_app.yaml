@@ -35,6 +35,7 @@ spec:
           script: |
             echo "Hello example-push-task!"
             echo -n "it works" | tee $(results.TEST_OUTPUT.path)
+            cat $(results.TEST_OUTPUT.path)
     - name: test-app-endpoint
       taskRef:
         resolver: git
