@@ -27,6 +27,9 @@ spec:
   tasks:
     - name: example-push-task
       taskSpec:
+        results:
+          - name: TEST_OUTPUT
+            description: Test output      
         steps:
         - image: alpine:3.15
           script: |
