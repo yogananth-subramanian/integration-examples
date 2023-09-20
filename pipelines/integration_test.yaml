@@ -7,9 +7,17 @@ spec:
     Expects a Snapshot of a simple application with endpoint containing the expected output to be deployed on an environment.
     A secret containing the kubeconfig for the environment needs to be mounted via the cluster-credentials workspace binding.
     The route to the single component is expected to have the same name as the component (default appstudio behavior).
+  params:
+    - description: 'Snapshot of the application'
+      name: SNAPSHOT
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'    
   tasks:
     - name: example-push-task1
+      params:
+        - name: SNAPSHOT
       taskSpec:
+        params:
+          - name: SNAPSHOT
         results:
           - name: url
             description: Test output
@@ -19,12 +27,12 @@ spec:
         - image: docker.io/dwdraju/alpine-curl-jq
           script: |
             echo "Hello example-push-task!"
-            echo '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
+            echo $(params.SNAPSHOT)|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
             echo -n "yes" | tee $(results.exists.path)
     - name: example-sidecar
       params:
         - name: url
-          value: $(tasks.example-push-task1.results.url)
+          value: $(tasks.example-push-task1.results.url)         
       taskSpec:
         params:
           - name: url
