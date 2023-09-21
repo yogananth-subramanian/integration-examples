@@ -36,5 +36,5 @@ spec:
             echo "Hello example-push-task!"
             echo $(params.SNAPSHOT)
   workspaces:
-    - name: workspace
+    - name: cluster-credentials
       
