@@ -26,6 +26,8 @@ spec:
       type: string     
   tasks:
     - name: example-push-task1
+      workspaces:
+        - name: cluster-credentials    
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
