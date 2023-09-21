@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: integration-test-app
+spec:
+  description: >-
+    Expects a Snapshot of a simple application with endpoint containing the expected output to be deployed on an environment. 
+    A secret containing the kubeconfig for the environment needs to be mounted via the cluster-credentials workspace binding.
+    The route to the single component is expected to have the same name as the component (default appstudio behavior).
+  params:
+    - description: 'Snapshot of the application'
+      name: SNAPSHOT
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+      type: string
+    - description: 'Namespace where the application is running'
+      name: NAMESPACE
+      default: "default"
+      type: string
+    - description: 'Expected output'
+      name: EXPECTED_OUTPUT
+      default: "Hello World"
+      type: string
+    - description: 'Application endpoint port'
+      name: PORT
+      default: ""
+      type: string     
+  tasks:
+    - name: example-push-task1
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+      taskSpec:     
+        steps:
+        - image: alpine:3.15
+          script: |
+            echo "Hello example-push-task!"
+            echo $(params.SNAPSHOT)
+  workspaces:
+    - name: cluster-credentials
+      optional: true
