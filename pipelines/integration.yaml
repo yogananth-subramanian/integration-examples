@@ -27,7 +27,7 @@ spec:
   tasks:
     - name: example-push-task1
       workspaces:
-        - name: cluster-credentials    
+        - name: workspace
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
@@ -38,5 +38,5 @@ spec:
             echo "Hello example-push-task!"
             echo $(params.SNAPSHOT)
   workspaces:
-    - name: cluster-credentials
+    - name: workspace
       
