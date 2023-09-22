@@ -39,4 +39,5 @@ spec:
             echo $(params.SNAPSHOT)
   workspaces:
     - name: workspace
+      optional: true    
       
