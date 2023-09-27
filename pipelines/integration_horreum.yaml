@@ -80,7 +80,7 @@ spec:
             h_user=`cat /workspace/user`
             h_pass=`cat /workspace/password`
             h_uri=`cat /workspace/uri`
-            TOKEN=$(curl -s  -k https://horreum-keycloak.apps-crc.testing/realms/horreum/protocol/openid-connect/token   -d "username=$h_user"  -d "password=$h_pass" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token)
+            TOKEN=$(curl -s  -k http://10.0.145.91:8180/realms/horreum/protocol/openid-connect/token   -d "username=$h_user"  -d "password=$h_pass" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token)
             changes=`curl ${h_uri}/api/alerting/changes?var=188 -k -s  -X GET  -H 'Authorization: Bearer '$TOKEN|jq  '.| length'`
             if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
 
