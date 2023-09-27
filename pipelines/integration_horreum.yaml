@@ -1,0 +1,102 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: integration-nodejs-horreum
+spec:
+  description: >-
+    Run Apache Bench (ab) against devfile-sample (https://github.com/nodeshift-starters/devfile-sample) and upload the
+    results to Horreum.
+  results:
+    - name: TEST_OUTPUT
+      value: "$(finally.cleanup.results.TEST_OUTPUT)"
+  tasks:
+    - name: extract-metadata
+      taskSpec:
+        results:
+          - name: url
+            description: image url
+          - name: test_name
+            description: Test name
+          - name: exits
+            description: Test output
+        steps:
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          script: |
+            echo "Extract image details"
+            echo '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
+            echo '{"application":"application-sample","components":[{"name":"node1","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+            echo -n "yes" | tee $(results.exits.path)
+    - name: run-perf
+      params:
+        - name: url
+          value: $(tasks.extract-metadata.results.url)
+        - name: test_name
+          value: $(tasks.extract-metadata.results.test_name)
+      taskSpec:
+        params:
+          - name: test_name
+        sidecars:
+        - image: $(params.url)
+        steps:
+        - image: docker.io/jordi/ab
+          name: perf
+          command: ["ab","-g","/workspace/output.tsv","http://localhost:3001/"]
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step1
+          script: |
+            echo "Transform result to json format"
+            cat /workspace/output.tsv
+            yq  -oj /workspace/output.tsv|jq .[]|tee /workspace/test_result.json
+        - image: quay.io/yogananth_subramanian/horreum_bash
+          name: step2
+          script: |
+            echo "Upload results for Horreum"
+            Test_result=FAIL
+            cat /workspace/test_result.json
+            test_name=$(params.test_name)
+            tname=`run test list|grep $test_name|cut -f1 -d ' '`
+            echo $tname
+            if [ $tname -eq 0  ] ;then echo "$test_name test not found in Horreum";exit 1;fi
+            stime=`date +%s%3N`
+            etime=$(($stime+300000))
+            run run new --test=$test_name --access=PUBLIC --owner=dev-team --start=$stime --stop=$etime -f /workspace/test_result.json
+            echo $HORREUM_USER > /workspace/user
+            echo $HORREUM_PASSWORD > /workspace/password
+            echo $HORREUM_URI > /workspace/uri
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step3
+          script: |
+            echo "Check for regression!"
+            h_user=`cat /workspace/user`
+            h_pass=`cat /workspace/password`
+            h_uri=`cat /workspace/uri`
+            TOKEN=$(curl -s  -k https://horreum-keycloak.apps-crc.testing/realms/horreum/protocol/openid-connect/token   -d "username=$h_user"  -d "password=$h_pass" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token)
+            changes=`curl ${h_uri}/api/alerting/changes?var=188 -k -s  -X GET  -H 'Authorization: Bearer '$TOKEN|jq  '.| length'`
+            if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
+
+      when:
+        - input: "$(tasks.extract-metadata.results.exits)"
+          operator: in
+          values: ["yes"]
+  finally:
+    - name: cleanup
+      params:
+        - name: aggregateTasksStatus
+          value: "$(tasks.status)"
+      taskSpec:
+        results:
+          - name: TEST_OUTPUT
+        params:
+          - name: aggregateTasksStatus
+        steps:
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step1
+          script: |
+            RESULT="SUCCESS"
+            if [ $(params.aggregateTasksStatus) == "Failed" ]
+            then
+              RESULT="FAILURE"
+            fi
+            TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg RESULT "${RESULT}" --null-input \
+            '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
+            echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)            
