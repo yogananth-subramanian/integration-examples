@@ -6,12 +6,20 @@ spec:
   description: >-
     Run Apache Bench (ab) against devfile-sample (https://github.com/nodeshift-starters/devfile-sample) and upload the
     results to Horreum.
+  params:
+    - description: 'Snapshot of the application'
+      name: SNAPSHOT
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'      
   results:
     - name: TEST_OUTPUT
       value: "$(finally.cleanup.results.TEST_OUTPUT)"
   tasks:
     - name: extract-metadata
+      params:
+        - name: SNAPSHOT    
       taskSpec:
+        params:
+          - name: SNAPSHOT      
         results:
           - name: url
             description: image url
@@ -23,8 +31,8 @@ spec:
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           script: |
             echo "Extract image details"
-            echo '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
-            echo '{"application":"application-sample","components":[{"name":"node1","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+            echo $(params.SNAPSHOT)|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
+            echo $(params.SNAPSHOT)|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.test_name.path)
             echo -n "yes" | tee $(results.exits.path)
     - name: run-perf
       params:
@@ -47,7 +55,7 @@ spec:
             echo "Transform result to json format"
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|tee /workspace/test_result.json
-        - image: quay.io/yogananth_subramanian/horreum_bash
+        - image: quay.io/yogananth_subramanian/horreum
           name: step2
           script: |
             echo "Upload results for Horreum"
