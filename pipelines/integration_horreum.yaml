@@ -16,10 +16,11 @@ spec:
   tasks:
     - name: extract-metadata
       params:
-        - name: SNAPSHOT    
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
       taskSpec:
         params:
-          - name: SNAPSHOT      
+          - name: SNAPSHOT
         results:
           - name: url
             description: image url
@@ -31,8 +32,9 @@ spec:
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           script: |
             echo "Extract image details"
-            echo $(params.SNAPSHOT)|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
-            echo $(params.SNAPSHOT)|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.test_name.path)
+            echo $(params.SNAPSHOT)
+            echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
+            echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.test_name.path)
             echo -n "yes" | tee $(results.exits.path)
     - name: run-perf
       params:
