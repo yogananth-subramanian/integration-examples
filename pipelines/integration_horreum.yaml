@@ -121,7 +121,7 @@ spec:
           operator: in
           values: ["yes"]
   finally:
-    - name: cleanup
+    - name: cleanup  
       params:
         - name: aggregateTasksStatus
           value: "$(tasks.status)"	
@@ -132,8 +132,33 @@ spec:
           - name: aggregateTasksStatus
         steps:
         - image: quay.io/yogananth_subramanian/curl-yq-jq
+          env:
+            - name: HORREUM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_password
+            - name: HORREUM_URI
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_uri
+            - name: HORREUM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_user
+            - name: KEYCLOAK_URI 
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: keycloak_uri        
           name: step1
           script: |
+            echo ${KEYCLOAK_URI}
+            echo ${HORREUM_URI}
+            echo ${HORREUM_URI}
+            echo ${HORREUM_PASSWORD}
             RESULT="SUCCESS"
             if [ $(params.aggregateTasksStatus) == "Failed" ]
             then
