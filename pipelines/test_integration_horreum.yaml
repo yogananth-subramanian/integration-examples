@@ -1,0 +1,86 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: integration-nodejs-horreum
+spec:
+  description: >-
+    Run Apache Bench (ab) against devfile-sample (https://github.com/nodeshift-starters/devfile-sample) and upload the
+    results to Horreum. 
+  params:
+    - description: 'Snapshot of the application'
+      name: SNAPSHOT
+      default: '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'
+  results:
+    - name: TEST_OUTPUT
+      value: "$(finally.cleanup.results.TEST_OUTPUT)"
+  tasks:
+    - name: extract-metadata
+      params:
+        - name: SNAPSHOT  
+          value: $(params.SNAPSHOT)
+      taskSpec:
+        params:
+          - name: SNAPSHOT  
+        results:
+          - name: url
+            description: image url
+          - name: test_name
+            description: Test name
+          - name: exits
+            description: Test output 
+        steps:
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          script: |
+            echo "Extract image details"
+            echo $(params.SNAPSHOT)
+            echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
+            echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+    - name: run-perf
+      params:
+        - name: url
+          value: $(tasks.extract-metadata.results.url)
+        - name: test_name
+          value: $(tasks.extract-metadata.results.test_name)
+      taskSpec:
+        params:
+          - name: test_name
+        sidecars:
+        - image: $(params.url)
+        steps:
+        - image: docker.io/jordi/ab
+          name: perf
+          command: ["ab","-g","/workspace/output.tsv","http://localhost:3001/"]
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step1
+          script: |
+            echo "Transform result to json format"
+            cat /workspace/output.tsv
+            yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
+      when:
+        - input: "$(tasks.extract-metadata.results.exits)"
+          operator: in
+          values: ["yes"]
+      runAfter:
+        - extract-metadata   
+  finally:
+    - name: cleanup  
+      params:
+        - name: aggregateTasksStatus
+          value: "$(tasks.status)"	
+      taskSpec:
+        results:
+          - name: TEST_OUTPUT
+        params:
+          - name: aggregateTasksStatus
+        steps:
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step1
+          script: |
+            RESULT="SUCCESS"
+            if [ $(params.aggregateTasksStatus) == "Failed" ]
+            then
+              RESULT="FAILURE"
+            fi
+            TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg RESULT "${RESULT}" --null-input \
+            '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
+            echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)
