@@ -67,9 +67,8 @@ spec:
                 '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
               echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)
               echo -e "${SNAPSHOT}"
-              echo -e "${NAMESPACE}"          
-      workspaces:
-      - name: cluster-credentials             
+              echo -e "${NAMESPACE}" 
+          
  workspaces:
     - name: cluster-credentials
       optional: true     
