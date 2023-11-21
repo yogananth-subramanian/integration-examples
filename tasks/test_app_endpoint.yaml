@@ -34,22 +34,22 @@ spec:
       script: |
         #!/usr/bin/env bash
         export KUBECONFIG=$(workspaces.cluster-credentials.path)/kubeconfig
-        
+
         # Get the route for the application endpoint
         COMPONENT_NAME=$(echo -n ${SNAPSHOT} | jq -r .components[0].name)
         # The --insecure-skip-tls-verify option is added for local testing
-        # when the clusters only have self-signed certificates. 
+        # when the clusters only have self-signed certificates.
         # This option should not be used in production.
         ROUTE_NAME=$(oc get routes -l app.kubernetes.io/name="${COMPONENT_NAME}" -o name --insecure-skip-tls-verify)
         HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
         echo "Found target host ${HOST} for app ${APPLICATION_NAME}"
-        
+        sleep 120
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k https://${HOST}:${PORT})
         echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
         echo -e "Expected endpoint output:\n ${EXPECTED_OUTPUT}"
         echo -e "Snapshot output:\n ${SNAPSHOT}"
-        
+        echo ${ENDPOINT_OUTPUT} > $(workspaces.cluster-credentials.path)/endpoint_url
         if [[ "${ENDPOINT_OUTPUT}" == "${EXPECTED_OUTPUT}" ]]; then
           RESULT="SUCCESS"
         else
@@ -60,7 +60,11 @@ spec:
           '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
         echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)
         echo -e "${SNAPSHOT}"
-        echo -e "${NAMESPACE}"        
+        echo -e "${NAMESPACE}"
+    - image: docker.io/dwdraju/alpine-curl-jq
+      script: |
+        echo "Hello example-push-task!"
+        cat $(workspaces.cluster-credentials.path)/endpoint_url
   workspaces:
     - name: cluster-credentials
       optional: true
