@@ -60,9 +60,9 @@ spec:
           workspace: cluster-credentials
     - name: example-push-task2
       taskSpec:
-        params:
-          - name: url
-            value: $(tasks.example-push-task1.results.TEST_OUTPUT)   
+      params:
+        - name: url
+          value: $(tasks.example-push-task1.results.TEST_OUTPUT)   
         steps:
         - image: alpine:3.15
           script: |
