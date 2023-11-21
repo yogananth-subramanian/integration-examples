@@ -49,7 +49,7 @@ spec:
         echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
         echo -e "Expected endpoint output:\n ${EXPECTED_OUTPUT}"
         echo -e "Snapshot output:\n ${SNAPSHOT}"
-        echo ${ENDPOINT_OUTPUT} > $(workspaces.cluster-credentials.path)/endpoint_url
+        echo ${HOST} > /tekton/home/endpoint_url
         if [[ "${ENDPOINT_OUTPUT}" == "${EXPECTED_OUTPUT}" ]]; then
           RESULT="SUCCESS"
         else
@@ -64,7 +64,7 @@ spec:
     - image: docker.io/dwdraju/alpine-curl-jq
       script: |
         echo "Hello example-push-task!"
-        cat $(workspaces.cluster-credentials.path)/endpoint_url
+        cat /tekton/home/endpoint_url
   workspaces:
     - name: cluster-credentials
       optional: true
