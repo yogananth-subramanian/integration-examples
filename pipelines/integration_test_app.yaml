@@ -58,6 +58,54 @@ spec:
       workspaces:
         - name: cluster-credentials
           workspace: cluster-credentials
+    - name: test-app-endpoint2
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+        - name: NAMESPACE
+          value: $(params.NAMESPACE)
+        - name: EXPECTED_OUTPUT
+          value: $(params.SNAPSHOT)
+        - name: PORT
+          value: $(params.PORT)
+      workspaces:
+        - name: cluster-credentials
+          workspace: cluster-credentials      
+      taskSpec:
+        params:
+          - name: SNAPSHOT
+            description: Expected output of the application endpoint
+          - default: 'default'
+            name: NAMESPACE
+            description: Namespace of the application under test
+          - default: "Hello World"
+            name: EXPECTED_OUTPUT
+            description: Expected output of the application endpoint
+          - default: ""
+            name: PORT
+            description: Application endpoint Port
+        results:
+          - name: TEST_OUTPUT
+            description: Test output 
+        workspaces:
+          - name: cluster-credentials
+            optional: true                
+        steps:
+        - image: alpine:3.15
+          env:
+            - name: SNAPSHOT
+              value: $(params.SNAPSHOT)
+            - name: NAMESPACE
+              value: $(params.NAMESPACE)
+            - name: EXPECTED_OUTPUT
+              value: $(params.EXPECTED_OUTPUT)
+            - name: PORT
+              value: $(params.PORT)        
+          script: |
+            echo "Hello example-push-task2!"
+            echo -n "it works" | tee $(results.TEST_OUTPUT.path)
+            echo -n ${SNAPSHOT}
+            cat $(results.TEST_OUTPUT.path)          
     - name: example-push-task2
       params:
         - name: url
