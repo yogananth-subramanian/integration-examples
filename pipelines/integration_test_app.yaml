@@ -86,7 +86,9 @@ spec:
             description: Application endpoint Port
         results:
           - name: APP_URL
-            description: APP URL 
+            description: APP URL
+          - name: TEST_OUTPUT
+            description: Test output             
         workspaces:
           - name: cluster-credentials
             optional: true                
@@ -119,7 +121,7 @@ spec:
             echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
             echo -e "Expected endpoint output:\n ${EXPECTED_OUTPUT}"
             echo -e "Snapshot output:\n ${SNAPSHOT}"
-            
+
             echo ${HOST} > /tekton/home/endpoint_url            
             echo -n ${HOST} | tee $(results.APP_URL.path)
 
