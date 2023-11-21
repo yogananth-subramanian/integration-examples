@@ -43,7 +43,7 @@ spec:
         ROUTE_NAME=$(oc get routes -l app.kubernetes.io/name="${COMPONENT_NAME}" -o name --insecure-skip-tls-verify)
         HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
         echo "Found target host ${HOST} for app ${APPLICATION_NAME}"
-        sleep 120
+        
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
         echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
