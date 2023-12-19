@@ -43,6 +43,7 @@ spec:
         - name: test_name
           value: $(tasks.extract-metadata.results.test_name)
       taskSpec:
+        steps:      
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: step3
           env:
