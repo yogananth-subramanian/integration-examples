@@ -148,6 +148,15 @@ spec:
           script: |
             echo "Hello example-push-task!" 
             echo $(params.url)
+        - image: docker.io/jordi/ab
+          name: perf
+          command: ["ab","-g","/workspace/output.tsv","http://$(params.url)"]
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step1
+          script: |
+            echo "Transform result to json format"
+            cat /workspace/output.tsv
+            yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json            
   workspaces:
     - name: cluster-credentials
       optional: true
