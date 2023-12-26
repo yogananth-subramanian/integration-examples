@@ -150,7 +150,7 @@ spec:
             echo $(params.url)
         - image: docker.io/jordi/ab
           name: perf
-          command: ["ab","-g","/workspace/output.tsv","http://$(params.url)"]
+          command: ["ab","-g","/workspace/output.tsv","http://$(params.url)/"]
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: step1
           script: |
