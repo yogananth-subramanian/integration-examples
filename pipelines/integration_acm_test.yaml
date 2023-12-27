@@ -108,6 +108,87 @@ spec:
             echo "Transform result to json format"
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json            
+        - image: quay.io/yogananth_subramanian/horreum
+          name: step2
+          env:
+            - name: HORREUM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_password
+            - name: HORREUM_URI
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_uri
+            - name: HORREUM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_user
+          script: |
+            echo "Upload results to Horreum"
+            cat /workspace/test_result.json
+            test_name=devfile-sample
+            tname=`run test list|grep $test_name|cut -f1 -d ' '`
+            echo $tname
+            if [ -z  $tname ] ;then echo "$test_name test not found in Horreum";exit 1;fi
+            stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
+            etime=$(($stime+300000))
+            run run new --test=$test_name --access=PUBLIC --owner=dev-team --start=$stime --stop=$etime -f /workspace/test_result.json
+        - image: quay.io/yogananth_subramanian/curl-yq-jq
+          name: step3
+          env:
+            - name: HORREUM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_password
+            - name: HORREUM_URI
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_uri
+            - name: HORREUM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: horreum_user
+            - name: KEYCLOAK_URI 
+              valueFrom:
+                secretKeyRef:
+                  name: horreum
+                  key: keycloak_uri
+          script: |
+            set -xv
+            echo "Check for regression!"
+            TOKEN=$(curl -s  -k  ${KEYCLOAK_URI}/realms/horreum/protocol/openid-connect/token   -d "username=$HORREUM_USER"  -d "password=$HORREUM_PASSWORD" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token) 
+            changes=`curl ${HORREUM_URI}/api/alerting/changes?var=3 -k -s  -X GET  -H 'Authorization: Bearer '${TOKEN}|jq  '.| length'`
+            if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
+      runAfter:
+        - extract-metadata           
+  finally:
+    - name: cleanup  
+      params:
+        - name: aggregateTasksStatus
+          value: "$(tasks.status)"	
+      taskSpec:
+        results:
+          - name: TEST_OUTPUT
+        params:
+          - name: aggregateTasksStatus
+        steps:
+        - image: quay.io/yogananth_subramanian/curl-yq-jq  
+          name: step1
+          script: |
+            RESULT="SUCCESS"
+            if [ $(params.aggregateTasksStatus) == "Failed" ]
+            then
+              RESULT="FAILURE"
+            fi
+            TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg RESULT "${RESULT}" --null-input \
+            '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
+            echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)
   workspaces:
     - name: cluster-credentials
       optional: true
