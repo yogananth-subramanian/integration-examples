@@ -166,7 +166,7 @@ spec:
             changes=`curl ${HORREUM_URI}/api/alerting/changes?var=3 -k -s  -X GET  -H 'Authorization: Bearer '${TOKEN}|jq  '.| length'`
             if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
       runAfter:
-        - extract-metadata           
+        - test-app-endpoint1           
   finally:
     - name: cleanup  
       params:
