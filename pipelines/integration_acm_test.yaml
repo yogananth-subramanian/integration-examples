@@ -132,6 +132,7 @@ spec:
             test_name=devfile-sample
             tname=`run test list|grep $test_name|cut -f1 -d ' '`
             echo $tname
+            set -x
             if [ -z  $tname ] ;then echo "$test_name test not found in Horreum";exit 1;fi
             cat /workspace/test_result.json |jq .seconds
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
