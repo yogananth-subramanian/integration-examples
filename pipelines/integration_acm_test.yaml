@@ -134,7 +134,8 @@ spec:
             echo $tname
             set -x
             if [ -z  $tname ] ;then echo "$test_name test not found in Horreum";exit 1;fi
-            cat /workspace/test_result.json |jq .seconds
+            tmp_time=`cat /workspace/test_result.json |jq .seconds`
+            echo $tmp_time
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
             etime=$(($stime+300000))
             run run new --test=$test_name --access=PUBLIC --owner=dev-team --start=$stime --stop=$etime -f /workspace/test_result.json
