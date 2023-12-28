@@ -57,6 +57,7 @@ spec:
             echo "Transform result to json format"
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
+            echo -n   $((`cat /workspace/test_result.json |jq .seconds`*1000))|tee /workspace/stime
         - image: quay.io/yogananth_subramanian/horreum
           name: step2
           env:
@@ -82,7 +83,7 @@ spec:
             tname=`run test list|grep $test_name|cut -f1 -d ' '`
             echo $tname
             if [ -z  $tname ] ;then echo "$test_name test not found in Horreum";exit 1;fi
-            stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
+            stime=`cat /workspace/stime`
             etime=$(($stime+300000))
             run run new --test=$test_name --access=PUBLIC --owner=dev-team --start=$stime --stop=$etime -f /workspace/test_result.json
         - image: quay.io/yogananth_subramanian/curl-yq-jq
