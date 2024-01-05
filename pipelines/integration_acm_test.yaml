@@ -59,8 +59,6 @@ spec:
               value: $(params.SNAPSHOT)
             - name: NAMESPACE
               value: $(params.NAMESPACE)
-            - name: EXPECTED_OUTPUT
-              value: $(params.EXPECTED_OUTPUT)
             - name: PORT
               value: $(params.PORT)        
           script: |
