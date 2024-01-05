@@ -99,7 +99,7 @@ spec:
         - name: url
           value: $(tasks.test-app-endpoint1.results.APP_URL)
         - name: test_name
-          value: $(tasks.extract-metadata.results.test_name)         
+          value: $(tasks.test-app-endpoint1.results.test_name)         
       taskSpec:
         params:
           - name: url
