@@ -45,9 +45,6 @@ spec:
           - default: 'default'
             name: NAMESPACE
             description: Namespace of the application under test
-          - default: "Hello World"
-            name: EXPECTED_OUTPUT
-            description: Expected output of the application endpoint
           - default: ""
             name: PORT
             description: Application endpoint Port
@@ -88,7 +85,6 @@ spec:
             # Check the application endpoint
             ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
             echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
-            echo -e "Expected endpoint output:\n ${EXPECTED_OUTPUT}"
             echo -e "Snapshot output:\n ${SNAPSHOT}"
 
             echo ${HOST} > /tekton/home/endpoint_url            
