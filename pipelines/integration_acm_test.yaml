@@ -130,7 +130,7 @@ spec:
           script: |
             echo "Upload results to Horreum"
             cat /workspace/test_result.json
-            test_name=devfile-sample
+            test_name=$(params.test_name)
             tname=`run test list|grep $test_name|cut -f1 -d ' '`
             echo $tname
             set -x
@@ -166,7 +166,7 @@ spec:
             set -xv
             echo "Check for regression!"
             TOKEN=$(curl -s  -k  ${KEYCLOAK_URI}/realms/horreum/protocol/openid-connect/token   -d "username=$HORREUM_USER"  -d "password=$HORREUM_PASSWORD" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token) 
-            changes=`curl ${HORREUM_URI}/api/alerting/changes?var=3 -k -s  -X GET  -H 'Authorization: Bearer '${TOKEN}|jq  '.| length'`
+            changes=`curl ${HORREUM_URI}/api/alerting/changes?var=38 -k -s  -X GET  -H 'Authorization: Bearer '${TOKEN}|jq  '.| length'`
             if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
       runAfter:
         - test-app-endpoint1           
