@@ -19,8 +19,8 @@ spec:
     - description: 'Application endpoint port'
       name: PORT
       default: ""
-      type: string     
-  :
+      type: string
+  tasks:  
     - name: extract-metadata
       params:
         - name: SNAPSHOT
