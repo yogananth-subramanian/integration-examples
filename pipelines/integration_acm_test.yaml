@@ -20,8 +20,8 @@ spec:
       name: PORT
       default: ""
       type: string     
-  tasks:
-    - name: test-app-endpoint1
+  :
+    - name: extract-metadata
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
@@ -82,29 +82,29 @@ spec:
             echo ${HOST} > /tekton/home/endpoint_url            
             echo -n ${HOST} | tee $(results.APP_URL.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)            
-    - name: example-push-task2
+    - name: perf-benchmark
       params:
         - name: url
-          value: $(tasks.test-app-endpoint1.results.APP_URL)
+          value: $(tasks.extract-metadata.results.APP_URL)
         - name: test_name
-          value: $(tasks.test-app-endpoint1.results.test_name)         
+          value: $(tasks.extract-metadata.results.test_name)         
       taskSpec:
         params:
           - name: url
           - name: test_name         
         steps:
         - image: docker.io/jordi/ab
-          name: perf
+          name: run-perf
           command: ["ab","-g","/workspace/output.tsv","http://$(params.url)/"]
         - image: quay.io/yogananth_subramanian/curl-yq-jq
-          name: step1
+          name: transform-output
           script: |
             echo "Transform result to json format"
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
             echo -n   $((`cat /workspace/test_result.json |jq .seconds`*1000))|tee /workspace/stime            
         - image: quay.io/yogananth_subramanian/horreum
-          name: step2
+          name: upload-results
           env:
             - name: HORREUM_PASSWORD
               valueFrom:
@@ -134,7 +134,7 @@ spec:
             etime=$(($stime+300000))
             run run new --test=$test_name --access=PUBLIC --owner=dev-team --start=$stime --stop=$etime -f /workspace/test_result.json
         - image: quay.io/yogananth_subramanian/curl-yq-jq
-          name: step3
+          name: check-regression
           env:
             - name: HORREUM_PASSWORD
               valueFrom:
@@ -163,7 +163,7 @@ spec:
             changes=`curl ${HORREUM_URI}/api/alerting/changes?var=42 -k -s  -X GET  -H 'Authorization: Bearer '${TOKEN}|jq  '.| length'`
             if [ -z  $changes ] || [ $changes -gt 0  ] ;then echo "Regression check failed";exit 1;fi
       runAfter:
-        - test-app-endpoint1           
+        - extract-metadata           
   finally:
     - name: cleanup  
       params:
