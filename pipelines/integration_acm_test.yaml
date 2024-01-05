@@ -54,6 +54,8 @@ spec:
         results:
           - name: APP_URL
             description: APP URL
+          - name: test_name
+            description: Test name            
           - name: TEST_OUTPUT
             description: Test output             
         workspaces:
@@ -90,14 +92,18 @@ spec:
             echo -e "Snapshot output:\n ${SNAPSHOT}"
 
             echo ${HOST} > /tekton/home/endpoint_url            
-            echo -n ${HOST} | tee $(results.APP_URL.path)                   
+            echo -n ${HOST} | tee $(results.APP_URL.path)
+            echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)            
     - name: example-push-task2
       params:
         - name: url
-          value: $(tasks.test-app-endpoint1.results.APP_URL)      
+          value: $(tasks.test-app-endpoint1.results.APP_URL)
+        - name: test_name
+          value: $(tasks.extract-metadata.results.test_name)         
       taskSpec:
         params:
-          - name: url 
+          - name: url
+          - name: test_name         
         steps:
         - image: docker.io/jordi/ab
           name: perf
