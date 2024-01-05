@@ -16,10 +16,6 @@ spec:
       name: NAMESPACE
       default: "default"
       type: string
-    - description: 'Expected output'
-      name: EXPECTED_OUTPUT
-      default: "Hello World"
-      type: string
     - description: 'Application endpoint port'
       name: PORT
       default: ""
@@ -31,8 +27,6 @@ spec:
           value: $(params.SNAPSHOT)
         - name: NAMESPACE
           value: $(params.NAMESPACE)
-        - name: EXPECTED_OUTPUT
-          value: $(params.SNAPSHOT)
         - name: PORT
           value: $(params.PORT)
       workspaces:
