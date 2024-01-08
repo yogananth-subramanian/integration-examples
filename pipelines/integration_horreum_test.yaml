@@ -67,6 +67,8 @@ spec:
           script: |
             set -xv
             echo "Check for regression!"
+            echo ${KEYCLOAK_URI}
+            echo ${HORREUM_URI}
             TOKEN=$(curl -s  -k  ${KEYCLOAK_URI}/realms/horreum/protocol/openid-connect/token   -d "username=$HORREUM_USER"  -d "password=$HORREUM_PASSWORD" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token) 
             output=$(curl ${HORREUM_URI}/api/test?direction=Ascending -k -s -v -X GET  -H 'Authorization: Bearer '${TOKEN})
             echo $output
