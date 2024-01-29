@@ -10,6 +10,9 @@ spec:
     - description: 'Snapshot of the application'
       name: SNAPSHOT
       default: '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'
+    - description: 'horreum secret name'
+      name: sec-name
+      default: 'horreum'
   results:
     - name: TEST_OUTPUT
       value: "$(finally.cleanup.results.TEST_OUTPUT)"
@@ -18,6 +21,8 @@ spec:
       params:
         - name: SNAPSHOT  
           value: $(params.SNAPSHOT)
+        - name: sec-name  
+          value: $(params.sec-name)          
       taskSpec:
         params:
           - name: SNAPSHOT  
@@ -46,6 +51,8 @@ spec:
           value: $(tasks.extract-metadata.results.url)
         - name: test_name
           value: $(tasks.extract-metadata.results.test_name)
+         - name: sec-name  
+          value: $(params.sec-name)          
       taskSpec:
         params:
           - name: test_name
@@ -67,17 +74,17 @@ spec:
             - name: HORREUM_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_password
             - name: HORREUM_URI
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_uri
             - name: HORREUM_USER
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_user
           script: |
             echo "Upload results to Horreum"
@@ -95,22 +102,22 @@ spec:
             - name: HORREUM_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_password
             - name: HORREUM_URI
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_uri
             - name: HORREUM_USER
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: horreum_user
             - name: KEYCLOAK_URI 
               valueFrom:
                 secretKeyRef:
-                  name: horreum
+                  name: $(params.sec-name)
                   key: keycloak_uri
           script: |
             set -xv
