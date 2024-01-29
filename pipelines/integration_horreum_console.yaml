@@ -36,11 +36,7 @@ spec:
             echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
             echo -n "yes" | tee $(results.exits.path)
-    - name: run-perf
-      when:
-        - input: "no"
-          operator: in
-          values: ["yes"]    
+    - name: run-perf 
       params:
         - name: url
           value: $(tasks.extract-metadata.results.url)
@@ -63,6 +59,10 @@ spec:
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
         - image: quay.io/yogananth_subramanian/horreum
           name: step2
+          when:
+            - input: "no"
+              operator: in
+              values: ["yes"]           
           env:
             - name: HORREUM_PASSWORD
               valueFrom:
@@ -91,6 +91,10 @@ spec:
             run run new --test=$test_name --access=PUBLIC --owner=Rhdh-perf-test-team --start=$stime --stop=$etime -f /workspace/test_result.json
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: step3
+          when:
+            - input: "no"
+              operator: in
+              values: ["yes"]          
           env:
             - name: HORREUM_PASSWORD
               valueFrom:
