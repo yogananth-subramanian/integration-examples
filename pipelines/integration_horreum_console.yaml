@@ -51,7 +51,7 @@ spec:
           value: $(tasks.extract-metadata.results.url)
         - name: test_name
           value: $(tasks.extract-metadata.results.test_name)
-         - name: sec-name  
+        - name: sec-name  
           value: $(params.sec-name)          
       taskSpec:
         params:
