@@ -10,9 +10,6 @@ spec:
     - description: 'Snapshot of the application'
       name: SNAPSHOT
       default: '{"application":"application-sample","components":[{"name":"component-sample","containerImage":"quay.io/redhat-user-workloads-stage/ysubrama-tenant/my-app/devfile-sample-xktr:92aa0ecf7aeb326491d82a196b2db8d78f0f8a9a","source":{"git":{"url":"git@github.com:redhat-appstudio/integration-service.git","revision":"sha256:3703843e80f39188c060a6ed0f524519a682be1e7141fee29b878b1973e9783c"}}}],"artifacts":{}}'
-    - description: 'horreum secret name'
-      name: sec-name
-      default: 'horreum'
   results:
     - name: TEST_OUTPUT
       value: "$(finally.cleanup.results.TEST_OUTPUT)"
@@ -20,9 +17,7 @@ spec:
     - name: extract-metadata
       params:
         - name: SNAPSHOT  
-          value: $(params.SNAPSHOT)
-        - name: sec-name  
-          value: $(params.sec-name)          
+          value: $(params.SNAPSHOT)        
       taskSpec:
         params:
           - name: SNAPSHOT  
@@ -31,6 +26,8 @@ spec:
             description: image url
           - name: test_name
             description: Test name
+          - name: sec_name
+            description: secret name            
           - name: exits
             description: Test output 
         steps:
@@ -40,6 +37,7 @@ spec:
             echo $(params.SNAPSHOT)
             echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+            echo 'horreum'| tee $(results.sec_name.path)
             echo -n "yes" | tee $(results.exits.path)
     - name: run-perf   
       params:
@@ -48,7 +46,7 @@ spec:
         - name: test_name
           value: $(tasks.extract-metadata.results.test_name)
         - name: sec-name  
-          value: $(params.sec-name)          
+          value: $(tasks.extract-metadata.results.sec-name)          
       taskSpec:
         params:
           - name: test_name
