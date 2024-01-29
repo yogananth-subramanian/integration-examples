@@ -41,11 +41,7 @@ spec:
             echo '$(params.SNAPSHOT)'|jq -r .components[].containerImage |  tr -d '\n\t' | tee $(results.url.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
             echo -n "yes" | tee $(results.exits.path)
-    - name: run-perf
-      when:
-        - input: "no"
-          operator: in
-          values: ["yes"]    
+    - name: run-perf   
       params:
         - name: url
           value: $(tasks.extract-metadata.results.url)
