@@ -20,6 +20,10 @@ spec:
       name: PORT
       default: ""
       type: string
+    - description: 'Horreum regression variable'
+      name: HR_REG_VAR
+      default: ""
+      type: string        
   tasks:  
     - name: extract-metadata
       params:
@@ -29,6 +33,8 @@ spec:
           value: $(params.NAMESPACE)
         - name: PORT
           value: $(params.PORT)
+        - name: HR_REG_VAR
+          value: $(params.HR_REG_VAR)          
       workspaces:
         - name: cluster-credentials
           workspace: cluster-credentials      
@@ -42,6 +48,8 @@ spec:
           - default: ""
             name: PORT
             description: Application endpoint Port
+          - name: HR_REG_VAR
+            description: 'Horreum regression variable'            
         results:
           - name: APP_URL
             description: APP URL
