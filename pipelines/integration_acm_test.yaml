@@ -20,6 +20,14 @@ spec:
       name: PORT
       default: ""
       type: string
+    - description: 'Horreum Test Name'
+      name: HR_TEST_NAME
+      default: ""
+      type: string
+    - description: 'Horreum regression variable'
+      name: HR_REG_VAR
+      default: ""
+      type: string      
   tasks:  
     - name: extract-metadata
       params:
@@ -29,6 +37,10 @@ spec:
           value: $(params.NAMESPACE)
         - name: PORT
           value: $(params.PORT)
+        - name: HR_TEST_NAME
+          default: $(params.HR_TEST_NAME)
+        - name: HR_REG_VAR
+          default: $(params.HR_REG_VAR)        
       workspaces:
         - name: cluster-credentials
           workspace: cluster-credentials      
@@ -42,11 +54,17 @@ spec:
           - default: ""
             name: PORT
             description: Application endpoint Port
+          - name: HR_TEST_NAME
+            description: 'Horreum Test Name'
+          - name: HR_REG_VAR
+            description: 'Horreum regression variable'            
         results:
           - name: APP_URL
             description: APP URL
           - name: test_name
-            description: Test name            
+            description: Test name
+          - name: reg_var
+            description: Regression variable        
           - name: TEST_OUTPUT
             description: Test output             
         workspaces:
@@ -81,17 +99,33 @@ spec:
 
             echo ${HOST} > /tekton/home/endpoint_url            
             echo -n ${HOST} | tee $(results.APP_URL.path)
-            echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)            
+            if [ -z ${params.HR_TEST_NAME} ]
+            then
+              echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+            else
+              echo -n  '$(params.HR_TEST_NAME)' | tee $(results.test_name.path)
+            fi            
+            echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
+            
+            if [ -z ${params.HR_REG_VAR} ]
+            then
+              echo -n 'ttime' | tee $(results.reg_var.path)
+            else
+              echo -n '$(params.HR_REG_VAR)' | tee $(results.reg_var.path)
+            fi            
     - name: perf-benchmark
       params:
         - name: url
           value: $(tasks.extract-metadata.results.APP_URL)
         - name: test_name
-          value: $(tasks.extract-metadata.results.test_name)         
+          value: $(tasks.extract-metadata.results.test_name)
+        - name: reg_var
+          value: $(tasks.extract-metadata.results.reg_var)          
       taskSpec:
         params:
           - name: url
-          - name: test_name         
+          - name: test_name
+          - name: reg_var
         steps:
         - image: docker.io/jordi/ab
           name: run-perf
@@ -120,8 +154,7 @@ spec:
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
             test_name=$(params.test_name)
-            test_name=devfile-sample-demo
-            reg_var=ttime
+            reg_var=$(params.reg_var)
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
             etime=$(($stime+300000))
             KEYCLOAK_URI=$(curl -s -k -X GET  ${HORREUM_URI}/api/config/keycloak|jq -r .url)
