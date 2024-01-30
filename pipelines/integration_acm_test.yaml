@@ -98,7 +98,7 @@ spec:
             echo ${HOST} > /tekton/home/endpoint_url            
             echo -n ${HOST} | tee $(results.APP_URL.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
-            if [ -z ${params.HR_REG_VAR} ]
+            if [ -z $(params.HR_REG_VAR) ]
             then
               echo -n 'ttime' | tee $(results.reg_var.path)
             else
