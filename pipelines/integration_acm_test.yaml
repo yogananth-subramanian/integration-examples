@@ -22,7 +22,7 @@ spec:
       type: string
     - description: 'Horreum Test Name'
       name: HR_TEST_NAME
-      default: "devfile-sample-demo"
+      default: ""
       type: string      
     - description: 'Horreum regression variable'
       name: HR_REG_VAR
