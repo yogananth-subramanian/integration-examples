@@ -128,7 +128,7 @@ spec:
         steps:
         - image: docker.io/jordi/ab
           name: run-perf
-          command: ["ab","-g","/workspace/output.tsv","http://$(params.url)/"]
+          command: ["ab","-t","300","-g","/workspace/output.tsv","http://$(params.url)/"]
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: check-regression
           env:
