@@ -54,6 +54,8 @@ spec:
           - default: ""
             name: PORT
             description: Application endpoint Port
+          - name: HR_TEST_NAME
+            description: 'Horreum Test Name'            
           - name: HR_REG_VAR
             description: 'Horreum regression variable'            
         results:
