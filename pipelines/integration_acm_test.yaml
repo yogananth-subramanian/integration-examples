@@ -123,6 +123,7 @@ spec:
             reg_var=ttime
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
             etime=$(($stime+300000))
+            KEYCLOAK_URI=$(curl -s -k -X GET  ${HORREUM_URI}/api/config/keycloak|jq .url)
             TOKEN=$(curl -s  -k  ${KEYCLOAK_URI}/realms/horreum/protocol/openid-connect/token   -d "username=$HORREUM_USER"  -d "password=$HORREUM_PASSWORD" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token)
             curl -k -s -v ${HORREUM_URI}'/api/run/data?start='$stime'&stop='$etime'&test='$test_name -X POST -H 'Authorization: Bearer '${TOKEN} -H 'Content-Type: application/json'  -d @/workspace/test_result.json
             testid=$(curl -s -k -X GET  ${HORREUM_URI}'/api/test/byName/'$test_name|jq .id)
