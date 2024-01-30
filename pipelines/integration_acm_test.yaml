@@ -128,7 +128,7 @@ spec:
         steps:
         - image: docker.io/jordi/ab
           name: run-perf
-          command: ["ab","-t","300","-g","/workspace/output.tsv","http://$(params.url)/"]
+          command: ["ab","-t","60","-e","Z","-g","/workspace/output.tsv","http://$(params.url)/"]
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: check-regression
           env:
@@ -151,11 +151,12 @@ spec:
             set -xv
             echo "Transform result to json format"
             cat /workspace/output.tsv
-            yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
+            ttime=`grep ^95 /workspace/output.csv |cut -d, -f2`
+            yq  -oj /workspace/output.tsv|jq .[0]|jq --arg tt ${ttime} '{ starttime: .starttime, seconds: .seconds, ttime: $tt, "$schema": "uri:nodejs1:0.1" }'|tee /workspace/test_result.json
             test_name=$(params.test_name)
             reg_var=$(params.reg_var)
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
-            etime=$(($stime+300000))
+            etime=$(($stime+60000))
             KEYCLOAK_URI=$(curl -s -k -X GET  ${HORREUM_URI}/api/config/keycloak|jq -r .url)
             TOKEN=$(curl -s  -k  ${KEYCLOAK_URI}/realms/horreum/protocol/openid-connect/token   -d "username=$HORREUM_USER"  -d "password=$HORREUM_PASSWORD" -d 'grant_type=password' -d 'client_id=horreum-ui' | jq -r .access_token)
             curl -k -s -v ${HORREUM_URI}'/api/run/data?start='$stime'&stop='$etime'&test='$test_name -X POST -H 'Authorization: Bearer '${TOKEN} -H 'Content-Type: application/json'  -d @/workspace/test_result.json
