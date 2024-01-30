@@ -23,11 +23,7 @@ spec:
     - description: 'Horreum Test Name'
       name: HR_TEST_NAME
       default: ""
-      type: string
-    - description: 'Horreum regression variable'
-      name: HR_REG_VAR
-      default: ""
-      type: string      
+      type: string     
   tasks:  
     - name: extract-metadata
       params:
@@ -55,16 +51,12 @@ spec:
             name: PORT
             description: Application endpoint Port
           - name: HR_TEST_NAME
-            description: 'Horreum Test Name'
-          - name: HR_REG_VAR
-            description: 'Horreum regression variable'            
+            description: 'Horreum Test Name'           
         results:
           - name: APP_URL
             description: APP URL
           - name: test_name
-            description: Test name
-          - name: reg_var
-            description: Regression variable        
+            description: Test name     
           - name: TEST_OUTPUT
             description: Test output             
         workspaces:
@@ -107,12 +99,7 @@ spec:
             fi            
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)
             
-            if [ -z ${params.HR_REG_VAR} ]
-            then
-              echo -n 'ttime' | tee $(results.reg_var.path)
-            else
-              echo -n '$(params.HR_REG_VAR)' | tee $(results.reg_var.path)
-            fi            
+           
     - name: perf-benchmark
       params:
         - name: url
@@ -125,7 +112,6 @@ spec:
         params:
           - name: url
           - name: test_name
-          - name: reg_var
         steps:
         - image: docker.io/jordi/ab
           name: run-perf
@@ -154,7 +140,7 @@ spec:
             cat /workspace/output.tsv
             yq  -oj /workspace/output.tsv|jq .[]|jq --arg foo bar '. + {"$schema": "uri:nodejs1:0.1"}'|tee /workspace/test_result.json
             test_name=$(params.test_name)
-            reg_var=$(params.reg_var)
+            reg_var=ttime
             stime=$((`cat /workspace/test_result.json |jq .seconds`*1000))
             etime=$(($stime+300000))
             KEYCLOAK_URI=$(curl -s -k -X GET  ${HORREUM_URI}/api/config/keycloak|jq -r .url)
