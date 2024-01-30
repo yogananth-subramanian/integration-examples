@@ -90,7 +90,9 @@ spec:
         - name: url
           value: $(tasks.extract-metadata.results.APP_URL)
         - name: test_name
-          value: $(tasks.extract-metadata.results.test_name)         
+          value: $(tasks.extract-metadata.results.test_name)
+        - name: reg_var
+          value: $(tasks.extract-metadata.results.reg_var)           
       taskSpec:
         params:
           - name: url
