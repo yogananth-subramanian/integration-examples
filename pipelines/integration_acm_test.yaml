@@ -46,7 +46,9 @@ spec:
           - name: APP_URL
             description: APP URL
           - name: test_name
-            description: Test name            
+            description: Test name
+          - name: reg_var
+            description: Regression variable             
           - name: TEST_OUTPUT
             description: Test output             
         workspaces:
@@ -81,6 +83,7 @@ spec:
 
             echo ${HOST} > /tekton/home/endpoint_url            
             echo -n ${HOST} | tee $(results.APP_URL.path)
+            echo -n 'ttime' | tee $(results.reg_var.path)
             echo '$(params.SNAPSHOT)'|jq -r .components[].name |  tr -d '\n\t' | tee $(results.test_name.path)            
     - name: perf-benchmark
       params:
@@ -91,7 +94,8 @@ spec:
       taskSpec:
         params:
           - name: url
-          - name: test_name         
+          - name: test_name
+          - name: reg_var          
         steps:
         - image: docker.io/jordi/ab
           name: run-perf
