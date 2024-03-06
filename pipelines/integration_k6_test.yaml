@@ -128,6 +128,12 @@ spec:
         steps:
         - image: grafana/k6
           name: run-perf
+          env:
+            - name: OCM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ocm
+                  key: ocmtoken          
           script: |
             #!/usr/bin/env sh
             export
