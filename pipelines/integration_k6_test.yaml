@@ -143,7 +143,7 @@ spec:
             echo ${OCM_TOKEN}
             /tmp/ocm login --token=${OCM_TOKEN} --url=http://$(params.url)
             export BASE_URL=http://$(params.url)
-            wget -O /tmp/script.js https://gist.githubusercontent.com/syananth/edce61e537b80abe10f4f353c80dcae5/raw/2edae03b9444767aab842257410235854d9dfe2b/script.js
+            wget -O /tmp/script.js https://gist.githubusercontent.com/syananth/edce61e537b80abe10f4f353c80dcae5/raw/1417500224a1d10e0b7dacb0f719d33512058fdc/script.js
             echo -n `/tmp/ocm token`>/tmp/token
             k6 run /tmp/script.js            
       runAfter:
