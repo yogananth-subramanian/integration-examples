@@ -143,9 +143,10 @@ spec:
             echo ${OCM_TOKEN}
             /tmp/ocm login --token=${OCM_TOKEN} --url=http://$(params.url)
             export BASE_URL=http://$(params.url)
-            wget -O /tmp/script.js https://gist.githubusercontent.com/syananth/edce61e537b80abe10f4f353c80dcae5/raw/2705b7123d3423ca4887659b589f66e58d7ff385/script.js
+            wget -O /tmp/script.js https://gist.githubusercontent.com/yogananth-subramanian/b53efebf507b44a4197dcce804560278/raw/f6f37bba5b45fd68d6e488abe3b8b3c4f901565f/script.js
             echo -n `/tmp/ocm token`>/tmp/token
-            k6 run /tmp/script.js            
+            k6 run /tmp/script.js
+            cat /workspace/output.json
       runAfter:
         - extract-metadata           
   workspaces:
