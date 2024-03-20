@@ -46,6 +46,8 @@ spec:
         oc whoami --insecure-skip-tls-verify
         oc auth can-i --list --namespace=openshift-monitoring --insecure-skip-tls-verify
         echo -e "the project is"
+        echo -e "${SNAPSHOT}"
+        echo -e "${NAMESPACE}"
         oc project --short
         oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
         
