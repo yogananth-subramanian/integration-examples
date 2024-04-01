@@ -91,7 +91,22 @@ spec:
             ROUTE_NAME=$(oc get routes -l app.kubernetes.io/name="${COMPONENT_NAME}" -o name --insecure-skip-tls-verify)
             HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
             echo "Found target host ${HOST} for app ${APPLICATION_NAME}"
-            
+
+            cat << EOF > /tmp/sec.yaml
+            kind: NetworkPolicy
+            apiVersion: networking.k8s.io/v1
+            metadata:
+              name: default-deny-all-egress
+            spec:
+              policyTypes:
+              - Egress
+              - Ingress
+              podSelector: {}
+              egress: []
+              ingress: []            
+            EOF
+            oc create -f /tmp/sec.yaml
+            oc get secrets
             # Check the application endpoint
             ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
             echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
