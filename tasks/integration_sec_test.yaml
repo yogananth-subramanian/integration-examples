@@ -139,13 +139,46 @@ spec:
         - name: test_name
           value: $(tasks.extract-metadata.results.test_name)
         - name: reg_var
-          value: $(tasks.extract-metadata.results.reg_var)           
+          value: $(tasks.extract-metadata.results.reg_var)
+        - name: NAMESPACE
+          value: $(params.NAMESPACE)
+      workspaces:
+        - name: cluster-credentials
+          workspace: cluster-credentials            
       taskSpec:
         params:
           - name: url
           - name: test_name
-          - name: reg_var          
+          - name: reg_var
+          - default: 'default'
+            name: NAMESPACE
+            description: Namespace of the application under test          
+        workspaces:
+          - name: cluster-credentials
+            optional: true             
         steps:
+        - image: quay.io/krkn-chaos/krkn-hub:pod-scenarios
+          name: chaos-test
+          env:
+            - name: NAMESPACE
+              value: $(params.NAMESPACE)
+            - name: POD_LABEL
+              value: 'io.kompose.service=trex-db'
+            - name: EXPECTED_POD_COUNT
+              value: '1'
+            - name: KRKN_KUBE_CONFIG
+              value: $(workspaces.cluster-credentials.path)/kubeconfig                 
+          script: |
+            set -xv
+            export KUBECONFIG=$(workspaces.cluster-credentials.path)/kubeconfig
+            source /root/main_env.sh
+            source /root/env.sh
+            source /root/common_run.sh
+            config_setup
+            envsubst < /root/kraken/scenarios/pod_scenario.yaml.template > /root/kraken/scenarios/pod_scenario.yaml
+            envsubst < /root/kraken/config/config.yaml.template > /root/kraken/config/pod_scenario_config.yaml
+            cd /root/kraken
+            python3.9 run_kraken.py --config=/root/kraken/config/pod_scenario_config.yaml       
         - image: quay.io/yogananth_subramanian/curl-yq-jq
           name: check-regression
           env:
