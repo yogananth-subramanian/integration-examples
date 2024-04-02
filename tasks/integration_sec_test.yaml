@@ -107,6 +107,9 @@ spec:
             EOF
             oc create -f /tmp/sec.yaml
             oc get networkpolicy
+            oc get pods --show-labels
+            oc delete -f /tmp/sec.yaml
+            oc get networkpolicy 
             # Check the application endpoint
             ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
             echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
