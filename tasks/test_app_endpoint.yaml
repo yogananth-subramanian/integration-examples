@@ -51,6 +51,8 @@ spec:
         oc project --short
         oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
         oc get deployments --show-labels
+        oc scale --replicas=3 deployment -l app.kubernetes.io/part-of=devfile-sample-1
+        oc get deployments
         
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
