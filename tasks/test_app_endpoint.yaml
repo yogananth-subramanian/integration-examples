@@ -52,7 +52,12 @@ spec:
         oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
         oc get deployments --show-labels
         oc scale --replicas=3 deployment -l app.kubernetes.io/part-of=devfile-sample-1
-        sleep 60
+        oc get deployments
+        sleep 10
+        oc get deployments
+        sleep 20
+        oc get deployments
+        sleep 40
         oc get deployments
         
         # Check the application endpoint
