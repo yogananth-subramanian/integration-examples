@@ -53,13 +53,7 @@ spec:
         oc get deployments --show-labels
         oc get pvc
         oc scale --replicas=3 deployment -l app.kubernetes.io/part-of=devfile-sample-1
-        oc get deployments
-        sleep 10
-        oc get deployments
-        sleep 20
-        oc get deployments
-        sleep 40
-        oc get deployments
+        oc get pods  -o yaml |grep  -A6 resources
         
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
