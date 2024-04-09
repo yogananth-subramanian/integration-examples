@@ -53,6 +53,7 @@ spec:
         oc get deployments --show-labels
         oc get pvc
         oc scale --replicas=3 deployment -l app.kubernetes.io/part-of=devfile-sample-1
+        oc get pods
         oc get pods  -o yaml |grep  -A6 resources
         
         # Check the application endpoint
