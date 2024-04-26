@@ -43,13 +43,13 @@ spec:
         ROUTE_NAME=$(oc get routes -l app.kubernetes.io/name="${COMPONENT_NAME}" -o name --insecure-skip-tls-verify)
         HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
         echo "Found target host ${HOST} for app ${APPLICATION_NAME}"
-        oc whoami --insecure-skip-tls-verify
-        oc auth can-i --list --namespace=openshift-monitoring --insecure-skip-tls-verify
+        #oc whoami --insecure-skip-tls-verify
+        #oc auth can-i --list --namespace=openshift-monitoring --insecure-skip-tls-verify
         echo -e "the project is"
         echo -e "${SNAPSHOT}"
         echo -e "${NAMESPACE}"
-        oc project --short
-        oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
+        #oc project --short
+        #oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
         #oc get deployments --show-labels
         #oc get pvc
         #oc get pods
