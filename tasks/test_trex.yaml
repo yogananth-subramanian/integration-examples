@@ -1,0 +1,98 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: test-app-endpoint
+spec:
+  description: >-
+    Expects an Snapshot deployed.
+  params:
+    - name: SNAPSHOT
+      description: Expected output of the application endpoint
+    - default: 'default'
+      name: NAMESPACE
+      description: Namespace of the application under test
+    - default: "Hello World"
+      name: EXPECTED_OUTPUT
+      description: Expected output of the application endpoint
+    - default: ""
+      name: PORT
+      description: Application endpoint Port
+  results:
+    - name: TEST_OUTPUT
+      description: Test output
+  steps:
+    - image: registry.redhat.io/openshift4/ose-cli:latest
+      env:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+        - name: NAMESPACE
+          value: $(params.NAMESPACE)
+        - name: EXPECTED_OUTPUT
+          value: $(params.EXPECTED_OUTPUT)
+        - name: PORT
+          value: $(params.PORT)
+      script: |
+        dnf -y install jq
+        export KUBECONFIG=$(workspaces.cluster-credentials.path)/kubeconfig
+
+        # Get the route for the application endpoint
+        COMPONENT_NAME=$(echo -n ${SNAPSHOT} | jq -r .components[0].name)
+        # The --insecure-skip-tls-verify option is added for local testing
+        # when the clusters only have self-signed certificates.
+        # This option should not be used in production.
+        ROUTE_NAME=$(oc get routes -l app.kubernetes.io/name="${COMPONENT_NAME}" -o name --insecure-skip-tls-verify)
+        HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
+        echo "Found target host ${HOST} for app ${APPLICATION_NAME}"
+        oc whoami --insecure-skip-tls-verify
+        #oc auth can-i --list --namespace=openshift-monitoring --insecure-skip-tls-verify
+        echo -e "the project is"
+        echo -e "${SNAPSHOT}"
+        echo -e "${NAMESPACE}"
+        TARGET_COMPONENT_NAME="/tmp/rh-trex"
+        REPO_URL=$(echo $SNAPSHOT | jq -r '.components[] | select(.name == "rh-trex").source.git.url')
+        REPO_COMMIT=$(echo $SNAPSHOT | jq -r '.components[] | select(.name == "rh-trex").source.git.revision')
+        unit_test_json_output=${PWD}/test_output.json
+
+        # Clone Repo and checkout at snapshot commit
+        git clone $REPO_URL $TARGET_COMPONENT_NAME
+        cd $TARGET_COMPONENT_NAME
+        git checkout $REP_COMMIT
+
+        oc project --short
+        oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
+        #oc get deployments --show-labels
+        #oc get pvc
+        #oc get pods
+        #oc get pods  -o yaml |grep  -A6 resources
+        #curl -o /tmp/deploy.yaml https://gist.githubusercontent.com/yogananth-subramanian/a5a111d055dcd8303bff176ae90e6733/raw/1cb8b28a5f11a5841c16db9d166db9a7a62fe51b/trex-deploy.yaml
+        #oc create -f /tmp/deploy.yaml
+        #sleep 300
+        #oc get pods
+        #oc get svc
+        #oc get routes
+        oc get all
+        
+        # Check the application endpoint
+        ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
+        echo -e "The endpoint outputs the following:\n ${ENDPOINT_OUTPUT}"
+        echo -e "Expected endpoint output:\n ${EXPECTED_OUTPUT}"
+        echo -e "Snapshot output:\n ${SNAPSHOT}"
+        echo ${HOST} > /tekton/home/endpoint_url
+        if [[ "${ENDPOINT_OUTPUT}" == "${EXPECTED_OUTPUT}" ]]; then
+          RESULT="SUCCESS"
+        else
+          RESULT="FAILURE"
+        fi
+
+        TEST_OUTPUT=$(jq -rc --arg date $(date +%s) --arg RESULT "${RESULT}" --null-input \
+          '{result: $RESULT, timestamp: $date, failures: 0, successes: 0, warnings: 0}')
+        echo -n "${TEST_OUTPUT}" | tee $(results.TEST_OUTPUT.path)
+        echo -e "${SNAPSHOT}"
+        echo -e "${NAMESPACE}"
+    - image: docker.io/dwdraju/alpine-curl-jq
+      script: |
+        echo "Hello example-push-task!"
+        cat /tekton/home/endpoint_url
+  workspaces:
+    - name: cluster-credentials
+      optional: true
