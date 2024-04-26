@@ -49,8 +49,11 @@ spec:
         echo -e "${SNAPSHOT}"
         echo -e "${NAMESPACE}"
         TARGET_COMPONENT_NAME="/tmp/rh-trex"
-        REPO_URL=$(echo $SNAPSHOT | jq -r '.components[] | select(.name == "rh-trex").source.git.url')
-        REPO_COMMIT=$(echo $SNAPSHOT | jq -r '.components[] | select(.name == "rh-trex").source.git.revision')
+
+        REPO_URL=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.url')
+        REPO_COMMIT=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.revision')
+        echo $"{REPO_URL}"
+        echo $"{REPO_COMMIT}"
         unit_test_json_output=${PWD}/test_output.json
 
         # Clone Repo and checkout at snapshot commit
