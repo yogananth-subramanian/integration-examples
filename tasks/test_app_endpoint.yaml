@@ -60,6 +60,7 @@ spec:
         oc get pods
         oc get svc
         oc get routes
+        oc get all
         
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
