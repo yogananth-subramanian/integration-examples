@@ -57,6 +57,7 @@ spec:
         git clone $REPO_URL $TARGET_COMPONENT_NAME
         cd $TARGET_COMPONENT_NAME
         git checkout $REP_COMMIT
+        ls $TARGET_COMPONENT_NAME
 
         oc project --short
         oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
