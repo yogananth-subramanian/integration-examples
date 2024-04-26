@@ -53,8 +53,8 @@ spec:
         REPO_URL=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.url')
         REPO_COMMIT=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.revision')
         REPO_IMG=$(echo $SNAPSHOT | jq -r '.components[] | .containerImage')
-        echo $"{REPO_URL}"
-        echo $"{REPO_COMMIT}"
+        echo "${REPO_URL}"
+        echo "${REPO_COMMIT}"
         unit_test_json_output=${PWD}/test_output.json
 
         # Clone Repo and checkout at snapshot commit
@@ -76,7 +76,7 @@ spec:
         #oc get svc
         #oc get routes
         oc get all
-        skopeo inspect $"{REPO_IMG}"
+        skopeo inspect "${REPO_IMG}"
         
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
