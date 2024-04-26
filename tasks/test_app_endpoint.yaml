@@ -50,16 +50,16 @@ spec:
         echo -e "${NAMESPACE}"
         oc project --short
         oc auth can-i --list --namespace=`oc project --short` --insecure-skip-tls-verify        
-        oc get deployments --show-labels
-        oc get pvc
-        oc get pods
-        oc get pods  -o yaml |grep  -A6 resources
-        curl -o /tmp/deploy.yaml https://gist.githubusercontent.com/yogananth-subramanian/a5a111d055dcd8303bff176ae90e6733/raw/1cb8b28a5f11a5841c16db9d166db9a7a62fe51b/trex-deploy.yaml
-        oc create -f /tmp/deploy.yaml
-        sleep 300
-        oc get pods
-        oc get svc
-        oc get routes
+        #oc get deployments --show-labels
+        #oc get pvc
+        #oc get pods
+        #oc get pods  -o yaml |grep  -A6 resources
+        #curl -o /tmp/deploy.yaml https://gist.githubusercontent.com/yogananth-subramanian/a5a111d055dcd8303bff176ae90e6733/raw/1cb8b28a5f11a5841c16db9d166db9a7a62fe51b/trex-deploy.yaml
+        #oc create -f /tmp/deploy.yaml
+        #sleep 300
+        #oc get pods
+        #oc get svc
+        #oc get routes
         oc get all
         
         # Check the application endpoint
