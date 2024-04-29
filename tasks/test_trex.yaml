@@ -60,7 +60,7 @@ spec:
         # Clone Repo and checkout at snapshot commit
         git clone $REPO_URL $TARGET_COMPONENT_NAME
         cd $TARGET_COMPONENT_NAME
-        git checkout $REP_COMMIT
+        git checkout $REPO_COMMIT
         ls $TARGET_COMPONENT_NAME
 
         #oc project --short
