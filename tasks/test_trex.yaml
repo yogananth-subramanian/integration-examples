@@ -95,7 +95,7 @@ spec:
         oc apply -n ${NAMESPACE} -f /tmp/templates/service-template.json
         oc expose service trex
         oc get all
-        ROUTE_NAME=$(oc get routes trex" -o name --insecure-skip-tls-verify)
+        ROUTE_NAME=$(oc get routes trex -o name --insecure-skip-tls-verify)
         HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
 
         # Check the application endpoint
