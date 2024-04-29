@@ -101,6 +101,7 @@ spec:
             # This option should not be used in production.
 
             TARGET_COMPONENT_NAME="/tmp/rh-trex"
+            set -x
             REPO_URL=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.url')
             REPO_COMMIT=$(echo $SNAPSHOT | jq -r '.components[] | .source.git.revision')
             REPO_IMG=$(echo $SNAPSHOT | jq -r '.components[] | .containerImage')
@@ -168,13 +169,14 @@ spec:
           script: |
             #!/usr/bin/env sh
             export
+            set -x
             echo "Transform result to json format"
             wget -O /tmp/ocm https://github.com/openshift-online/ocm-cli/releases/download/v0.1.65/ocm-linux-amd64
             chmod +x /tmp/ocm
             echo ${OCM_TOKEN}
             /tmp/ocm login --token=${OCM_TOKEN} --url=http://$(params.url)
             export BASE_URL=http://$(params.url)
-            wget -O /tmp/script.js https://raw.githubusercontent.com/yogananth-subramanian/rh-trex/main/.tekton/rhtap-perf-integration-test.yaml/rhtap-perf-k6-test.js
+            wget -O /tmp/script.js https://raw.githubusercontent.com/yogananth-subramanian/rh-trex/main/.tekton/rhtap-perf-k6-test.js
             echo -n `/tmp/ocm token`>/tmp/token
             k6 run /tmp/script.js
             cat /workspace/output.json         
