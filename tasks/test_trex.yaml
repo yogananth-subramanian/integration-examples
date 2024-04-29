@@ -87,9 +87,15 @@ spec:
         echo ${image_rep}
         
         mkdir -p /tmp/templates/
-        for i in $(ls templates/*yml); do j=${i#*/}; outf=${j%.*};oc process --filename="$i" --local="true" --ignore-unknown-parameters="true" --param="ENVIRONMENT"=development --param="GLOG_V"=10  --param="DATABASE_HOST"=trex-db.test1 --param="DATABASE_NAME"=rhtrex  --param="DATABASE_PASSWORD"=foobar-bizz-buzz  --param="DATABASE_PORT"=5432 --param="DATABASE_USER"=trex  --param="DATABASE_SSLMODE"=disable --param="ENABLE_SENTRY"=false --param="SENTRY_KEY"=TODO --param="JWKS_URL"=https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/certs  --param="OCM_SERVICE_CLIENT_ID"=9d6a56ca-fc57-4674-a6b6-186c5480914e --param="OCM_SERVICE_CLIENT_SECRET"=xkE3TKNn4TyH5Scue07qKs2Yonjxw7gE  --param="OCM_BASE_URL"=https://api.integration.openshift.com --param="IMAGE_REGISTRY="$image_reg --param="IMAGE_REPOSITORY="$image_rep --param="IMAGE_TAG="$image_tag  > /tmp/templates/${outf}.json; done
+        for i in $(ls templates/*yml); do j=${i#*/}; outf=${j%.*};oc process --filename="$i" --local="true" --ignore-unknown-parameters="true" --param="ENVIRONMENT"=development --param="GLOG_V"=10  --param="DATABASE_HOST"=trex-db.$(oc project --short) --param="DATABASE_NAME"=rhtrex  --param="DATABASE_PASSWORD"=foobar-bizz-buzz  --param="DATABASE_PORT"=5432 --param="DATABASE_USER"=trex  --param="DATABASE_SSLMODE"=disable --param="ENABLE_SENTRY"=false --param="SENTRY_KEY"=TODO --param="JWKS_URL"=https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/certs  --param="OCM_SERVICE_CLIENT_ID"=9d6a56ca-fc57-4674-a6b6-186c5480914e --param="OCM_SERVICE_CLIENT_SECRET"=xkE3TKNn4TyH5Scue07qKs2Yonjxw7gE  --param="OCM_BASE_URL"=https://api.integration.openshift.com --param="IMAGE_REGISTRY="$image_reg --param="IMAGE_REPOSITORY="$image_rep --param="IMAGE_TAG="$image_tag  > /tmp/templates/${outf}.json; done
         for i in $(find /tmp/templates/ -type f);do oc apply  -n ${NAMESPACE} -f $i;done
+        oc apply -n ${NAMESPACE} /tmp/templates/db-template.json
+        oc apply -n ${NAMESPACE} /tmp/templates/secrets-template.json
+        oc apply -n ${NAMESPACE} /tmp/templates/service-template.json
+        oc expose service trex
         oc get all
+        ROUTE_NAME=$(oc get routes trex" -o name --insecure-skip-tls-verify)
+        HOST=$(oc get "${ROUTE_NAME}" -o jsonpath={.spec.host} -n "${NAMESPACE}" --insecure-skip-tls-verify)
 
         # Check the application endpoint
         ENDPOINT_OUTPUT=$(curl -k http://${HOST}:${PORT})
