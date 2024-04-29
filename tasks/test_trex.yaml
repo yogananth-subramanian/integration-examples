@@ -76,7 +76,7 @@ spec:
         #oc get svc
         #oc get routes
         oc get all
-        skopeo inspect "${REPO_IMG}"
+        #skopeo inspect "${REPO_IMG}"
         rev=$(echo ${REPO_IMG#*/})
         image_reg=$(echo ${REPO_IMG%%/*})
         image_tag=$(echo ${rev#*:})
