@@ -91,6 +91,7 @@ spec:
                   key: client_secret                                            
           script: |
             #!/usr/bin/env bash
+            dnf -y install jq git
             export KUBECONFIG=$(workspaces.cluster-credentials.path)/kubeconfig
 
             # Get the route for the application endpoint
