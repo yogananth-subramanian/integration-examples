@@ -40,7 +40,7 @@ spec:
       taskRef:
         params:
           - name: pipeline-name
-            value: $(context.pipelineRun.name)                      
+            value: "test"                    
         results:
           - name: TEST_OUTPUT
             description: Test output      
