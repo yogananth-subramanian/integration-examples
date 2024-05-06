@@ -45,7 +45,10 @@ spec:
           - name: revision
             value: main
           - name: pathInRepo
-            value: tasks/test_space.yaml           
+            value: tasks/test_space.yaml
+        workspaces:
+          - name: cluster-credentials
+            optional: true                          
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
