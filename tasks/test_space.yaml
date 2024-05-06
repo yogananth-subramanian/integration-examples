@@ -15,11 +15,11 @@ spec:
       image: registry.redhat.io/openshift4/ose-cli:4.13@sha256:73df37794ffff7de1101016c23dc623e4990810390ebdabcbbfa065214352c7c
       env:
         - name: KONFLUXNAMESPACE
-          value: "$(context.pipelineRun.namespace)"
+          value: $(context.pipelineRun.namespace)
         - name: PIPELINERUN_NAME
-          value: "$(context.pipelineRun.name)"
+          value: $(context.pipelineRun.name)
         - name: PIPELINERUN_UID
-          value: "$(context.pipelineRun.uid)"
+          value: $(context.pipelineRun.uid)
       script: |
         #!/bin/bash
         set -ex
@@ -41,7 +41,7 @@ spec:
         spec:
           tierName: appstudio-env
         EOF
-
+        cat space_request.yaml
         SPACEREQUEST_NAME=$(oc create -f space_request.yaml -o=jsonpath='{.metadata.name}')
 
         if oc wait spacerequests $SPACEREQUEST_NAME --for=condition=Ready --timeout=5m -n $KONFLUXNAMESPACE; then
